@@ -36,7 +36,7 @@ local Tabs = {
 
 local maxDistance = 2500
 local admins = {'Admin','Moderator','Weare','Contributor'}
-local playerLevel = game.Players.LocalPlayer:GetAttribute('Level')
+local playerLevel = playerVariables.LocalPlayer:GetAttribute('Level')
 
 getgenv().pfov = 70
 getgenv().cframeValue = 0
@@ -138,6 +138,11 @@ objectives = {}
 
 getgenv().foundUsers = {}
 
+local playerVariables = {
+    ['LocalPlayer'] = game.Players.LocalPlayer,
+    ['LocalTeam'] = game.Players.LocalPlayer.Team
+}
+
 local function isTableEmpty(input)
     for i,v in pairs(input) do
         if v then
@@ -151,7 +156,7 @@ local function refreshweapontable()
     table.clear(weapons)
     task.wait()
     table.insert(weapons,'All Guns')
-    for i,v in pairs(game.Players.LocalPlayer:WaitForChild('Backpack'):GetChildren()) do
+    for i,v in pairs(playerVariables.LocalPlayer:WaitForChild('Backpack'):GetChildren()) do
         table.insert(weapons, v.Name)
     end
 end
@@ -159,7 +164,7 @@ end
 local function refreshweapontable2()
     table.clear(killWeapons)
     task.wait()
-    for i,v in pairs(game.Players.LocalPlayer:WaitForChild('Backpack'):GetChildren()) do
+    for i,v in pairs(playerVariables.LocalPlayer:WaitForChild('Backpack'):GetChildren()) do
         if require(v.ACS_Settings).Type ~= 'Grenade' then
             table.insert(killWeapons, v.Name)
         end
@@ -188,7 +193,7 @@ function refreshplrtable()
     table.clear(plrs)
     task.wait()
     for i,v in pairs(game.Players:GetChildren()) do
-        if v ~= game.Players.LocalPlayer and v.Team ~= game.Players.LocalPlayer.Team then
+        if v ~= playerVariables.LocalPlayer and v.Team ~= playerVariables.LocalTeam then
             table.insert(plrs,v.DisplayName)
         end
     end
@@ -198,7 +203,7 @@ function refreshallplrstable()
     table.clear(allPlrs)
     task.wait()
     for i,v in pairs(game.Players:GetChildren()) do
-        if v ~= game.Players.LocalPlayer then
+        if v ~= playerVariables.LocalPlayer then
             table.insert(allPlrs,v.DisplayName)
         end
     end
@@ -223,14 +228,14 @@ end
 function equipGun()
     local tool = nil
     
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
         if v:FindFirstChild("ACS_Settings") then
             tool = v
             break
         end
     end
     
-    game.Players.LocalPlayer.Backpack[tool.Name].Parent = game.Players.LocalPlayer.Character
+    playerVariables.LocalPlayer.Backpack[tool.Name].Parent = playerVariables.LocalPlayer.Character
 end
 
 function whizz(plr)
@@ -246,7 +251,7 @@ function getIndex(table, value)
 end
 
 local function canTarget(plr)
-    if plr.Character ~= nil and plr.Team ~= game.Players.LocalPlayer.Team then
+    if plr.Character ~= nil and plr.Team ~= playerVariables.LocalTeam then
         if plr.Character.Humanoid.Health > 0 then
             return true
         end
@@ -267,13 +272,13 @@ end
 local function getWeaponByName(gun)
     local foundGun
 
-    for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
         if v.Name == gun then
             foundGun = v
         end
     end
 
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
         if v.Name == gun then
             foundGun = v
         end
@@ -301,7 +306,7 @@ local function getGreatestDamageWeapon()
     local modScript
     local mod
 
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetDescendants()) do
         if v.Name == 'ACS_Settings' then
             modScript = v
             mod = require(v)
@@ -313,7 +318,7 @@ local function getGreatestDamageWeapon()
         end
     end
 
-    for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Character:GetDescendants()) do
         if v.Name == 'ACS_Settings' then
             modScript = v
             mod = require(v)
@@ -334,7 +339,7 @@ local function getLeastDamageWeapon()
     local modScript
     local mod
     
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetDescendants()) do
         if v.Name == 'ACS_Settings' then
             modScript = v
             mod = require(v)
@@ -346,7 +351,7 @@ local function getLeastDamageWeapon()
         end
     end
 
-    for i,v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Character:GetDescendants()) do
         if v.Name == 'ACS_Settings' then
             modScript = v
             mod = require(v)
@@ -365,7 +370,7 @@ local function getLeastDamage()
     local leastDMG = math.huge
     local bestGun
     
-    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetDescendants()) do
+    for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetDescendants()) do
         if v.Name == 'ACS_Settings' then
             local modScript = v
             local mod = require(v)
@@ -385,8 +390,8 @@ local function setAmmo(gun, ammoCount)
         local oldReload
         local oldReload2
 
-        if gun.Parent == game.Players.LocalPlayer.Character then
-            gun.Parent = game.Players.LocalPlayer.Backpack
+        if gun.Parent == playerVariables.LocalPlayer.Character then
+            gun.Parent = playerVariables.LocalPlayer.Backpack
         end
 
         local animations = require(gun.ACS_Animations)
@@ -401,9 +406,9 @@ local function setAmmo(gun, ammoCount)
         animations.ReloadAnim = function() return end
         animations.TacticalReloadAnim = function() return end
 
-        gun.Parent = game.Players.LocalPlayer.Character
+        gun.Parent = playerVariables.LocalPlayer.Character
 
-        getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Reload()
+        getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Reload()
 
         animations.ReloadAnim = oldReload
         animations.TacticalReloadAnim = oldReload2
@@ -412,7 +417,7 @@ end
 
 local function setSemi()
     if game:GetService("Players").LocalPlayer.PlayerGui.StatusUI.GunHUD.FText.Text == 'Auto' then
-        getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Firemode()
+        getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Firemode()
     end
 end
 
@@ -423,8 +428,8 @@ local function killPlayer(plr)
         tool = getWeaponByName(weapontype)
     end
 
-    if tool.Parent ~= game.Players.LocalPlayer.Character then
-        tool.Parent = game.Players.LocalPlayer.Character
+    if tool.Parent ~= playerVariables.LocalPlayer.Character then
+        tool.Parent = playerVariables.LocalPlayer.Character
     end
     
     task.wait()
@@ -456,8 +461,8 @@ end
 local function damagePlayer(plr)
     local tool = getLeastDamageWeapon()
 
-    if tool.Parent ~= game.Players.LocalPlayer.Character then
-        tool.Parent = game.Players.LocalPlayer.Character
+    if tool.Parent ~= playerVariables.LocalPlayer.Character then
+        tool.Parent = playerVariables.LocalPlayer.Character
     end
 
     task.wait()
@@ -478,407 +483,11 @@ local function damagePlayer(plr)
     game:GetService("ReplicatedStorage"):WaitForChild("ACS_Engine"):WaitForChild("Events"):WaitForChild("WeaponDamage"):FireServer(unpack(args))
 end
 
-local function explode(plr)
-    local args = {
-        [1] = game.Players.LocalPlayer.Backpack.Impact,
-        [2] = {
-            ["Ammo"] = 0,
-            ["ShootRate"] = 0,
-            ["IgnoreProtection"] = false,
-            ["EnableZeroing"] = false,
-            ["WalkSpeed"] = 1,
-            ["MinRecoilPower"] = 1,
-            ["Zoom"] = 70,
-            ["MaxRecoilPower"] = 1,
-            ["SightAtt"] = "",
-            ["BulletPenetration"] = 0,
-            ["CanCheckMag"] = false,
-            ["WeaponType"] = "Grenade",
-            ["MuzzleVelocity"] = 0,
-            ["CanBreachDoor"] = false,
-            ["AmmoInGun"] = 0,
-            ["camRecoil"] = {
-                ["camRecoilUp"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilRight"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilLeft"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilTilt"] = {
-                    [1] = 0,
-                    [2] = 0
-                }
-            },
-            ["gunName"] = "Impact",
-            ["HeadDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["Zoom2"] = 70,
-            ["MagCount"] = false,
-            ["InfraRed"] = false,
-            ["DropOffEnd"] = 1000,
-            ["CurrentZero"] = 0,
-            ["RainbowMode"] = false,
-            ["CrosshairOffset"] = 0,
-            ["AimSpreadReduction"] = 1,
-            ["ShootType"] = 0,
-            ["Bullets"] = 0,
-            ["EnableHUD"] = false,
-            ["SlideEx"] = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-            ["Tracer"] = false,
-            ["LimbDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["MaxStoredAmmo"] = 0,
-            ["UnderBarrelAtt"] = "",
-            ["Jammed"] = false,
-            ["TracerEveryXShots"] = 0,
-            ["ZoomType"] = 1,
-            ["CanBreak"] = false,
-            ["TorsoDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["ShellInsert"] = false,
-            ["gunRecoil"] = {
-                ["gunRecoilTilt"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilUp"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilLeft"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilRight"] = {
-                    [1] = 0,
-                    [2] = 0
-                }
-            },
-            ["BurstShot"] = 0,
-            ["Type"] = "Grenade",
-            ["RecoilPowerStepAmount"] = 1,
-            ["FireModes"] = {
-                ["Auto"] = false,
-                ["ChangeFiremode"] = false,
-                ["Burst"] = false,
-                ["Semi"] = false
-            },
-            ["BulletDrop"] = 0,
-            ["CenterDot"] = true,
-            ["MaxSpread"] = 0,
-            ["CrossHair"] = false,
-            ["SlideLock"] = false,
-            ["BarrelAtt"] = "",
-            ["OtherAtt"] = "",
-            ["AimRecoilReduction"] = 1,
-            ["BulletType"] = "",
-            ["canAim"] = false,
-            ["AimInaccuracyDecrease"] = 0,
-            ["IncludeChamberedBullet"] = false,
-            ["MaxZero"] = 0,
-            ["AimInaccuracyStepAmount"] = 0,
-            ["adsTime"] = 1,
-            ["BulletFlare"] = false,
-            ["StoredAmmo"] = 0,
-            ["WalkMult"] = 0,
-            ["MinSpread"] = 0,
-            ["ZeroIncrement"] = 0,
-            ["DropOffStart"] = 1000,
-            ["TracerColor"] = Color3.new(1, 1, 1),
-            ["RandomTracer"] = {
-                ["Enabled"] = false,
-                ["Chance"] = 25
-            }
-        },
-        [3] = plr.Character.HumanoidRootPart.CFrame,
-        [4] = Vector3.new(0,-0.3,0),
-        [5] = 150
-    }
-    
-    game:GetService("ReplicatedStorage"):WaitForChild("ACS_Engine"):WaitForChild("Events"):WaitForChild("Grenade"):FireServer(unpack(args))
-end
-
-local function burn(plr)
-    local args = {
-        [1] = game.Players.LocalPlayer.Backpack.Molotov,
-        [2] = {
-            ["Ammo"] = 0,
-            ["ShootRate"] = 0,
-            ["IgnoreProtection"] = false,
-            ["EnableZeroing"] = false,
-            ["WalkSpeed"] = 1,
-            ["MinRecoilPower"] = 1,
-            ["Zoom"] = 70,
-            ["MaxRecoilPower"] = 1,
-            ["SightAtt"] = "",
-            ["BulletPenetration"] = 0,
-            ["CanCheckMag"] = false,
-            ["WeaponType"] = "Grenade",
-            ["MuzzleVelocity"] = 0,
-            ["CanBreachDoor"] = false,
-            ["AmmoInGun"] = 0,
-            ["camRecoil"] = {
-                ["camRecoilUp"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilRight"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilLeft"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilTilt"] = {
-                    [1] = 0,
-                    [2] = 0
-                }
-            },
-            ["gunName"] = "Molotov",
-            ["HeadDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["Zoom2"] = 70,
-            ["MagCount"] = false,
-            ["InfraRed"] = false,
-            ["DropOffEnd"] = 1000,
-            ["CurrentZero"] = 0,
-            ["RainbowMode"] = false,
-            ["CrosshairOffset"] = 0,
-            ["AimSpreadReduction"] = 1,
-            ["ShootType"] = 0,
-            ["Bullets"] = 0,
-            ["EnableHUD"] = false,
-            ["SlideEx"] = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-            ["Tracer"] = false,
-            ["LimbDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["MaxStoredAmmo"] = 0,
-            ["UnderBarrelAtt"] = "",
-            ["Jammed"] = false,
-            ["TracerEveryXShots"] = 0,
-            ["ZoomType"] = 1,
-            ["CanBreak"] = false,
-            ["TorsoDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["ShellInsert"] = false,
-            ["gunRecoil"] = {
-                ["gunRecoilTilt"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilUp"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilLeft"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilRight"] = {
-                    [1] = 0,
-                    [2] = 0
-                }
-            },
-            ["BurstShot"] = 0,
-            ["Type"] = "Grenade",
-            ["RecoilPowerStepAmount"] = 1,
-            ["FireModes"] = {
-                ["Auto"] = false,
-                ["ChangeFiremode"] = false,
-                ["Burst"] = false,
-                ["Semi"] = false
-            },
-            ["BulletDrop"] = 0,
-            ["CenterDot"] = true,
-            ["MaxSpread"] = 0,
-            ["CrossHair"] = false,
-            ["SlideLock"] = false,
-            ["BarrelAtt"] = "",
-            ["OtherAtt"] = "",
-            ["AimRecoilReduction"] = 1,
-            ["BulletType"] = "",
-            ["canAim"] = false,
-            ["AimInaccuracyDecrease"] = 0,
-            ["IncludeChamberedBullet"] = false,
-            ["MaxZero"] = 0,
-            ["AimInaccuracyStepAmount"] = 0,
-            ["adsTime"] = 1,
-            ["BulletFlare"] = false,
-            ["StoredAmmo"] = 0,
-            ["WalkMult"] = 0,
-            ["MinSpread"] = 0,
-            ["ZeroIncrement"] = 0,
-            ["DropOffStart"] = 1000,
-            ["TracerColor"] = Color3.new(1, 1, 1),
-            ["RandomTracer"] = {
-                ["Enabled"] = false,
-                ["Chance"] = 25
-            }
-        },
-        [3] = plr.Character.HumanoidRootPart.CFrame,
-        [4] = Vector3.new(0,0,0),
-        [5] = 150
-    }
-
-    game:GetService("ReplicatedStorage"):WaitForChild("ACS_Engine"):WaitForChild("Events"):WaitForChild("Grenade"):FireServer(unpack(args))
-end
-
-local function grenadeExplode(plr)
-    local args = {
-        [1] = game.Players.LocalPlayer.Backpack.Grenade,
-        [2] = {
-            ["Ammo"] = 0,
-            ["ShootRate"] = 0,
-            ["IgnoreProtection"] = false,
-            ["EnableZeroing"] = false,
-            ["WalkSpeed"] = 1,
-            ["MinRecoilPower"] = 1,
-            ["Zoom"] = 70,
-            ["MaxRecoilPower"] = 1,
-            ["SightAtt"] = "",
-            ["BulletPenetration"] = 0,
-            ["CanCheckMag"] = false,
-            ["WeaponType"] = "Grenade",
-            ["MuzzleVelocity"] = 0,
-            ["CanBreachDoor"] = false,
-            ["AmmoInGun"] = 0,
-            ["camRecoil"] = {
-                ["camRecoilUp"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilRight"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilLeft"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["camRecoilTilt"] = {
-                    [1] = 0,
-                    [2] = 0
-                }
-            },
-            ["gunName"] = "Grenade",
-            ["HeadDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["Zoom2"] = 70,
-            ["MagCount"] = false,
-            ["InfraRed"] = false,
-            ["DropOffEnd"] = 1000,
-            ["CurrentZero"] = 0,
-            ["RainbowMode"] = false,
-            ["CrosshairOffset"] = 0,
-            ["AimSpreadReduction"] = 1,
-            ["ShootType"] = 0,
-            ["Bullets"] = 0,
-            ["EnableHUD"] = false,
-            ["SlideEx"] = CFrame.new(0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1),
-            ["Tracer"] = false,
-            ["LimbDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["MaxStoredAmmo"] = 0,
-            ["UnderBarrelAtt"] = "",
-            ["Jammed"] = false,
-            ["TracerEveryXShots"] = 0,
-            ["ZoomType"] = 1,
-            ["CanBreak"] = false,
-            ["TorsoDamage"] = {
-                [1] = 0,
-                [2] = 0
-            },
-            ["ShellInsert"] = false,
-            ["gunRecoil"] = {
-                ["gunRecoilTilt"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilUp"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilLeft"] = {
-                    [1] = 0,
-                    [2] = 0
-                },
-                ["gunRecoilRight"] = {
-                    [1] = 0,
-                    [2] = 0
-                }
-            },
-            ["BurstShot"] = 0,
-            ["Type"] = "Grenade",
-            ["RecoilPowerStepAmount"] = 1,
-            ["FireModes"] = {
-                ["Auto"] = false,
-                ["ChangeFiremode"] = false,
-                ["Burst"] = false,
-                ["Semi"] = false
-            },
-            ["BulletDrop"] = 0,
-            ["CenterDot"] = true,
-            ["MaxSpread"] = 0,
-            ["CrossHair"] = false,
-            ["SlideLock"] = false,
-            ["BarrelAtt"] = "",
-            ["OtherAtt"] = "",
-            ["AimRecoilReduction"] = 1,
-            ["BulletType"] = "",
-            ["canAim"] = false,
-            ["AimInaccuracyDecrease"] = 0,
-            ["IncludeChamberedBullet"] = false,
-            ["MaxZero"] = 0,
-            ["AimInaccuracyStepAmount"] = 0,
-            ["adsTime"] = 1,
-            ["BulletFlare"] = false,
-            ["StoredAmmo"] = 0,
-            ["WalkMult"] = 0,
-            ["MinSpread"] = 0,
-            ["ZeroIncrement"] = 0,
-            ["DropOffStart"] = 1000,
-            ["TracerColor"] = Color3.new(1, 1, 1),
-            ["RandomTracer"] = {
-                ["Enabled"] = false,
-                ["Chance"] = 25
-            }
-        },
-        [3] = plr.Character.HumanoidRootPart.CFrame,
-        [4] = Vector3.new(0,0,0),
-        [5] = 150
-    }
-
-    game:GetService("ReplicatedStorage"):WaitForChild("ACS_Engine"):WaitForChild("Events"):WaitForChild("Grenade"):FireServer(unpack(args))
-end
-
 local function teleport(part)
     local folder = game:GetService("Workspace").Map.GAME:FindFirstChild('Bases')
     local canTeleport = false
     local vehicleSpawn = nil
-    local t = tostring(game.Players.LocalPlayer.Team)
+    local t = tostring(playerVariables.LocalTeam)
 
     local invaderPrefix = "Invader"
     local nativePrefix = "Native"
@@ -917,7 +526,7 @@ local function teleport(part)
 
         task.wait(0.2)
 
-        game.Players.LocalPlayer.Character.Humanoid.Jump = true
+        playerVariables.LocalPlayer.Character.Humanoid.Jump = true
 
         local args = {
             [2] = true
@@ -927,7 +536,7 @@ local function teleport(part)
 
         task.wait(0.1)
 
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
+        playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
         print(vehicleSpawn.Parent,vehicleSpawn)
     else
         local seatFound = false
@@ -935,7 +544,7 @@ local function teleport(part)
         for i,v in pairs(game:GetService("Workspace").ActiveVehicles:GetDescendants()) do
             if v:IsA('Folder') and v.Name == 'Body' then
                 if v:FindFirstChild('EnterPromptPart') then
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.EnterPromptPart.CFrame
+                    playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = v.EnterPromptPart.CFrame
                     fireproximityprompt(v.EnterPromptPart.ProximityPrompt)
                     seatFound = true
                 end
@@ -948,7 +557,7 @@ local function teleport(part)
         else
             task.wait(0.4)
 
-            game.Players.LocalPlayer.Character.Humanoid.Jump = true
+            playerVariables.LocalPlayer.Character.Humanoid.Jump = true
 
             local args = {
                 [2] = true
@@ -956,7 +565,7 @@ local function teleport(part)
 
             game:GetService("ReplicatedStorage").Parachutes.ChuteRem:InvokeServer(unpack(args))
 
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
+            playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
         end
     end
 
@@ -971,7 +580,7 @@ local function teleport(part)
 
         task.wait(0.2)
 
-        game.Players.LocalPlayer.Character.Humanoid.Jump = true
+        playerVariables.LocalPlayer.Character.Humanoid.Jump = true
 
         local args = {
             [2] = true
@@ -981,7 +590,7 @@ local function teleport(part)
 
         task.wait(0.1)
 
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
+        playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = part.CFrame
     end
 end
 
@@ -989,7 +598,7 @@ local function CFrameteleport(part)
     local folder = game:GetService("Workspace").Map.GAME:FindFirstChild('Bases')
     local canTeleport = false
     local vehicleSpawn = nil
-    local t = tostring(game.Players.LocalPlayer.Team)
+    local t = tostring(playerVariables.LocalTeam)
 
     local invaderPrefix = "Invader"
     local nativePrefix = "Native"
@@ -1028,7 +637,7 @@ local function CFrameteleport(part)
 
         task.wait(0.2)
 
-        game.Players.LocalPlayer.Character.Humanoid.Jump = true
+        playerVariables.LocalPlayer.Character.Humanoid.Jump = true
 
         local args = {
             [2] = true
@@ -1038,14 +647,14 @@ local function CFrameteleport(part)
 
         task.wait(0.1)
 
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part
+        playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = part
     else
         local seatFound = false
 
         for i,v in pairs(game:GetService("Workspace").ActiveVehicles:GetDescendants()) do
             if v:IsA('Folder') and v.Name == 'Body' then
                 if v:FindFirstChild('EnterPromptPart') then
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.EnterPromptPart.CFrame
+                    playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = v.EnterPromptPart.CFrame
                     fireproximityprompt(v.EnterPromptPart.ProximityPrompt)
                     seatFound = true
                 end
@@ -1058,7 +667,7 @@ local function CFrameteleport(part)
         else
             task.wait(0.4)
 
-            game.Players.LocalPlayer.Character.Humanoid.Jump = true
+            playerVariables.LocalPlayer.Character.Humanoid.Jump = true
 
             local args = {
                 [2] = true
@@ -1066,7 +675,7 @@ local function CFrameteleport(part)
 
             game:GetService("ReplicatedStorage").Parachutes.ChuteRem:InvokeServer(unpack(args))
 
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part
+            playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = part
         end
     end
 
@@ -1081,7 +690,7 @@ local function CFrameteleport(part)
 
         task.wait(0.2)
 
-        game.Players.LocalPlayer.Character.Humanoid.Jump = true
+        playerVariables.LocalPlayer.Character.Humanoid.Jump = true
 
         local args = {
             [2] = true
@@ -1091,7 +700,7 @@ local function CFrameteleport(part)
 
         task.wait(0.1)
 
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = part
+        playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = part
     end
 end
 
@@ -1140,7 +749,7 @@ function gunEsp(drop)
 
                     if drop_onscreen then
                         dropesp.Position = Vector2(drop_pos.X, drop_pos.Y)
-                        dropesp.Text = drop.Parent.Name..'\n'..'Distance:'..tostring(math.floor(game.Players.LocalPlayer:DistanceFromCharacter(drop.Position)))
+                        dropesp.Text = drop.Parent.Name..'\n'..'Distance:'..tostring(math.floor(playerVariables.LocalPlayer:DistanceFromCharacter(drop.Position)))
                         dropesp.Visible = true
                     else
                         dropesp.Visible = false
@@ -1207,8 +816,8 @@ Toggles.cframeToggle:OnChanged(function(Value)
     end
     task.spawn(function()
         while Value do
-            if game.Players.LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 then
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame + game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * cframeValue
+            if playerVariables.LocalPlayer.Character.Humanoid.MoveDirection.Magnitude > 0 then
+                playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame = playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame + playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame.lookVector * cframeValue
             end
         task.wait()
         end
@@ -1284,21 +893,6 @@ playerBoxLeft:AddToggle('bhopToggle', {
         end
     end
 })
-
---[[
-
-    local godmodeButton = playerBoxLeft:AddButton({
-        Text = 'Godmode Glitch',
-        Func = function()
-            game:GetService("ReplicatedStorage").ACS_Engine.Events.WeaponDamage:FireServer(nil, nil, nil, nil, (0/0), nil, nil, Vector2(1, 5))
-            local notif = Notification.new("info", "Godmode", "Godmode Enabled!")
-            notif:deleteTimeout(2)
-        end,
-        DoubleClick = false,
-        Tooltip = "It's finally back after all this time (You cant die or use guns sorry)"
-    })
-
-]]--
 
 playerBoxRight:AddSlider('fovSlider', {
     Text = 'FOV Scale',
@@ -1425,7 +1019,7 @@ Toggles.plrEspChams:OnChanged(function()
                 task.spawn(function()
                     if espSettings.teamSettings.friendly.enabled then
                         for i,v in pairs(workspace.Characters:GetDescendants()) do
-                            if v.Parent ~= game.Players.LocalPlayer.Character then
+                            if v.Parent ~= playerVariables.LocalPlayer.Character then
                                 if v:IsA('MeshPart') and not v:FindFirstChild('esp') then
                                     if v.Name ~= 'HumanoidRootPart' then
                                         partESP(v)
@@ -1436,7 +1030,7 @@ Toggles.plrEspChams:OnChanged(function()
                     else
                         for i,v in pairs(workspace.Characters:GetDescendants()) do
                             if v.Parent == workspace.Characters then
-                                if getPlayerByName(v.Name).Team ~= game.Players.LocalPlayer.Team then
+                                if getPlayerByName(v.Name).Team ~= playerVariables.LocalTeam then
                                     for i,v in pairs(v:GetChildren()) do
                                         if v:IsA('MeshPart') and not v:FindFirstChild('esp') then
                                             if v.Name ~= 'HumanoidRootPart' then
@@ -1634,9 +1228,9 @@ weaponBoxLeft:AddToggle('recoilToggle', {
     Tooltip = 'Takes recoil away from your guns',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
             if v:FindFirstChild('ACS_Settings') then
-                v.Parent = game.Players.LocalPlayer.Backpack
+                v.Parent = playerVariables.LocalPlayer.Backpack
             end
         end
         getgenv().recoilBool = Value
@@ -1647,7 +1241,7 @@ weaponBoxLeft:AddToggle('recoilToggle', {
 Toggles.recoilToggle:OnChanged(function()
     task.spawn(function()
         while recoilBool do
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
                 if v:FindFirstChild("ACS_Settings") and gunToMod == 'All Guns' then
                     local settings = require(v.ACS_Settings)
 
@@ -1699,9 +1293,9 @@ weaponBoxLeft:AddToggle('reloadToggle', {
     Tooltip = 'Reloads your gun instantly',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
             if v:FindFirstChild('ACS_Settings') then
-                v.Parent = game.Players.LocalPlayer.Backpack
+                v.Parent = playerVariables.LocalPlayer.Backpack
             end
         end
         getgenv().reloadBool = Value
@@ -1712,7 +1306,7 @@ weaponBoxLeft:AddToggle('reloadToggle', {
 Toggles.reloadToggle:OnChanged(function()
     task.spawn(function()
         while reloadBool do
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
                 if v:FindFirstChild('ACS_Animations') and gunToMod == 'All Guns' then
                     local animations = require(v.ACS_Animations)
                     animations.ReloadAnim = function() return end
@@ -1734,9 +1328,9 @@ weaponBoxLeft:AddToggle('ammoToggle', {
     Tooltip = 'Gives your guns infinite ammo',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
             if v:FindFirstChild('ACS_Settings') then
-                v.Parent = game.Players.LocalPlayer.Backpack
+                v.Parent = playerVariables.LocalPlayer.Backpack
             end
         end
         getgenv().ammoBool = Value
@@ -1747,7 +1341,7 @@ weaponBoxLeft:AddToggle('ammoToggle', {
 Toggles.ammoToggle:OnChanged(function()
     task.spawn(function()
         while ammoBool do
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
                 if v:FindFirstChild("ACS_Settings") and gunToMod == 'All Guns' then
                     local s = require(v["ACS_Settings"])
                     s.Ammo = 200
@@ -1761,12 +1355,12 @@ Toggles.ammoToggle:OnChanged(function()
 
             local ammoCounter = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild('StatusUI').GunHUD.Ammo.AText
             if ammoCounter.Text == '0 / 0' then
-                for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
                     if v:FindFirstChild('ACS_Settings') then
                         local gun = v
-                        v.Parent = game.Players.LocalPlayer.Backpack
+                        v.Parent = playerVariables.LocalPlayer.Backpack
                         task.wait(0.75)
-                        v.Parent = game.Players.LocalPlayer.Character
+                        v.Parent = playerVariables.LocalPlayer.Character
                         task.wait(0.65)
                     end
                 end
@@ -1776,75 +1370,15 @@ Toggles.ammoToggle:OnChanged(function()
     end)
 end)
 
---[[
-
-Toggles.ammoToggle:OnChanged(function()
-    task.spawn(function()
-        while ammoBool do
-            local ammoCounter = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild('StatusUI'):FindFirstChild('GunHUD').Ammo.AText
-            if ammoCounter.Text == '0 / 0' then
-                for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-                    if v:FindFirstChild('ACS_Settings') then
-                        local gun = v
-                        v.Parent = game.Players.LocalPlayer.Backpack
-                        task.wait()
-                        v.Parent = game.Players.LocalPlayer.Character
-                    end
-                end
-            end
-            task.wait()
-        end
-    end)
-end)
-
-weaponBoxLeft:AddToggle('instantKillToggle', {
-    Text = 'Instant Kill',
-    Default = false,
-    Tooltip = 'Allows your guns to instantly kill enemies',
-
-    Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
-            if v:FindFirstChild('ACS_Settings') then
-                v.Parent = game.Players.LocalPlayer.Backpack
-            end
-        end
-        getgenv().instantKillBool = Value
-        getgenv().modsEnabled4 = Value
-    end
-})
-
-Toggles.instantKillToggle:OnChanged(function()
-    task.spawn(function()
-        while instantKillBool do
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-                if v:FindFirstChild("ACS_Settings") and gunToMod == 'All Guns' then
-                    local s = require(v.ACS_Settings)
-                    s.LimbDamage = {100,100}
-                    s.TorsoDamage = {100,100}
-                    s.HeadDamage = {100,100}
-                elseif v:FindFirstChild("ACS_Settings") and v.Name == gunToMod then
-                    local s = require(v.ACS_Settings)
-                    s.LimbDamage = {100,100}
-                    s.TorsoDamage = {100,100}
-                    s.HeadDamage = {100,100}
-                end
-            end
-            task.wait()
-        end
-    end)
-end)
-
-]]--
-
 weaponBoxLeft:AddToggle('allowAutoToggle', {
     Text = 'Allow Full Auto',
     Default = false,
     Tooltip = 'Allows your guns to go automatic (press V to switch between semi and auto)',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
             if v:FindFirstChild('ACS_Settings') then
-                v.Parent = game.Players.LocalPlayer.Backpack
+                v.Parent = playerVariables.LocalPlayer.Backpack
             end
         end
         getgenv().allowAutoBool = Value
@@ -1855,7 +1389,7 @@ weaponBoxLeft:AddToggle('allowAutoToggle', {
 Toggles.allowAutoToggle:OnChanged(function()
     task.spawn(function()
         while allowAutoBool do
-            for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
                 if v:FindFirstChild("ACS_Settings") and gunToMod == 'All Guns' then
                     local s = require(v["ACS_Settings"])
                     s.FireModes.Auto = true
@@ -1874,7 +1408,7 @@ end)
 task.spawn(function()
     while not unloaded do
         if modsEnabled1 or modsEnabled2 or modsEnabled3 or modsEnabled4 or modsEnabled5 then
-            game.Players.LocalPlayer.Character:FindFirstChild('Humanoid').Died:Connect(function()
+            playerVariables.LocalPlayer.Character:FindFirstChild('Humanoid').Died:Connect(function()
                 local spawnButton = game:GetService("Players").LocalPlayer.PlayerGui.MENU.SpawnScreen
                 local killFeed = game:GetService("Players").LocalPlayer.PlayerGui.KillFeed
 
@@ -1892,11 +1426,11 @@ task.spawn(function()
 
                 task.wait(0.45)
 
-                for i,v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+                for i,v in pairs(playerVariables.LocalPlayer.Character:GetChildren()) do
                     if v:FindFirstChild('ACS_Settings') then
-                        v.Parent = game.Players.LocalPlayer.Backpack
+                        v.Parent = playerVariables.LocalPlayer.Backpack
                         task.wait()
-                        v.Parent = game.Players.LocalPlayer.Character
+                        v.Parent = playerVariables.LocalPlayer.Character
                     end
                 end
             end)
@@ -1915,7 +1449,7 @@ weaponBoxLeft:AddSlider('aimFovSlider', {
     Tooltip = 'Adjust your FOV when aiming down sight',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
             local s = require(v["ACS_Settings"])
             s.Zoom = Value
         end
@@ -1932,7 +1466,7 @@ weaponBoxLeft:AddSlider('firerateSlider', {
     Tooltip = 'Adjust the firerate of your guns',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
             local s = require(v["ACS_Settings"])
             s.ShootRate = Value
         end
@@ -1949,7 +1483,7 @@ weaponBoxLeft:AddSlider('bulletAmountSlider', {
     Tooltip = 'Adjust the amount of bullets fired from your guns at once',
 
     Callback = function(Value)
-        for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        for i,v in pairs(playerVariables.LocalPlayer.Backpack:GetChildren()) do
             local s = require(v["ACS_Settings"])
             s.Bullets = Value
         end
@@ -1974,7 +1508,7 @@ weaponBoxLeft:AddDropdown('hiddenWeaponDropDown', {
 local getGunButton = weaponBoxLeft:AddButton({
     Text = 'Get Weapon',
     Func = function()
-        local ogcframe = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        local ogcframe = playerVariables.LocalPlayer.Character.HumanoidRootPart.CFrame
         
         if gunToGrab == nil then
             local notif = Notification.new("warning", "Get Weapon", "Select a weapon to grab")
@@ -2404,9 +1938,9 @@ utilityBoxLeft:AddToggle('cosmeticsToggle', {
 
     Callback = function(Value)
         if Value then
-            game.Players.LocalPlayer:SetAttribute('Level', 200)
+            playerVariables.LocalPlayer:SetAttribute('Level', 200)
         else
-            game.Players.LocalPlayer:SetAttribute('Level', playerLevel)
+            playerVariables.LocalPlayer:SetAttribute('Level', playerLevel)
         end
     end
 })
@@ -2426,7 +1960,7 @@ Toggles.afkToggle:OnChanged(function()
         if afkBool then
             local GC = getconnections or get_signal_cons
             if GC then
-                for i,v in pairs(GC(game.Players.LocalPlayer.Idled)) do
+                for i,v in pairs(GC(playerVariables.LocalPlayer.Idled)) do
                     if v["Disable"] then
                         v["Disable"](v)
                     elseif v["Disconnect"] then
@@ -2482,7 +2016,7 @@ Toggles.adminDetectToggle:OnChanged(function()
                     if adminMethod == 'Kick' then
                         if table.find(admins,a) then
                             local message = 'Admin Detected:'..v.DisplayName
-                            game.Players.LocalPlayer:Kick(message)
+                            playerVariables.LocalPlayer:Kick(message)
                         end
                     else
                         if table.find(admins,a) then
@@ -2535,7 +2069,7 @@ utilityBoxLeft:AddButton({
     Text = 'Stop Spectating',
     Func = function()
         local camera = workspace.CurrentCamera
-        camera.CameraSubject = game.Players.LocalPlayer.Character.Humanoid
+        camera.CameraSubject = playerVariables.LocalPlayer.Character.Humanoid
     end,
     DoubleClick = false,
     Tooltip = 'Stop spectating a player'
@@ -2550,13 +2084,13 @@ if Owner then
             local colorFrame
 
             for i,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.Leaderboard.Main:GetDescendants()) do
-                if v:IsA('Frame') and v.Name == game.Players.LocalPlayer.Name then
+                if v:IsA('Frame') and v.Name == playerVariables.LocalPlayer.Name then
                     localFrame = v
                 end
             end
 
             for i,v in pairs(localFrame.Parent:GetChildren()) do
-                if v:IsA('Frame') and v.Name ~= game.Players.LocalPlayer.Name    then
+                if v:IsA('Frame') and v.Name ~= playerVariables.LocalPlayer.Name    then
                     colorFrame = v
                     break
                 end
@@ -2647,7 +2181,7 @@ utilityBoxRight:AddToggle('annoyToggle', {
     Callback = function(Value)
         if Value then
             equipGun()
-            whizz(game.Players.LocalPlayer)
+            whizz(playerVariables.LocalPlayer)
         end
 
         getgenv().annoyBool = Value
@@ -2663,7 +2197,7 @@ Toggles.annoyToggle:OnChanged(function()
                 end
             elseif annoyType == 'Silent' then
                 for i,v in pairs(game.Players:GetChildren()) do
-                    if v ~= game.Players.LocalPlayer then
+                    if v ~= playerVariables.LocalPlayer then
                         game:GetService("ReplicatedStorage").ACS_Engine.Events.Whizz:FireServer(v)
                     end
                 end
@@ -2689,154 +2223,11 @@ utilityBoxRight:AddDropdown('annoyTypeDropDown', {
 local utilityLabel = Tabs.Utility:AddLeftGroupbox('Utility Tab Info');
 utilityLabel:AddLabel('This tab has modules that can help you out a bit\n\nThe trolling section is for annoying and messing with the other people in the server', true)
 
---[[
-
-local explodePlayerButton = blatantBoxLeft:AddButton({
-    Text = 'Explode Player',
-    Func = function()
-        if plrExplode ~= nil then
-            if game.Players.LocalPlayer.Backpack:FindFirstChild('Impact') ~= nil then
-                if plrExplode.Character ~= nil then
-                    explode(plrExplode)
-                else
-                    local notif = Notification.new("warning", "Explode Player", "Player character not found")
-                    notif:deleteTimeout(3)
-                end
-            elseif game.Players.LocalPlayer.Backpack:FindFirstChild('Grenade') ~= nil then
-                if plrExplode.Character ~= nil then
-                    grenadeExplode(plrExplode)
-                    task.wait(3)
-                    if plrExplode.Character.Humanoid.Health > 0 then
-                        local notif = Notification.new("warning", "Burn Player", "Failed to kill player")
-                        notif:deleteTimeout(3)
-                    end
-                else
-                    local notif = Notification.new("warning", "Explode Player", "Player character not found")
-                    notif:deleteTimeout(3)
-                end
-            else
-                local notif = Notification.new("warning", "Explode Player", "Impact or normal grenade not found")
-                notif:deleteTimeout(3)
-            end
-        else
-            local notif = Notification.new("warning", "Explode Player", "Please pick a player to blow up")
-            notif:deleteTimeout(3)
-        end
-    end,
-    DoubleClick = false,
-    Tooltip = 'Attempts to explode a player (Requires an impact grenade or a normal grenade)'
-})
-
-local burnPlayerButton = blatantBoxLeft:AddButton({
-    Text = 'Burn Player',
-    Func = function()
-        if plrExplode ~= nil then
-            if game.Players.LocalPlayer.Backpack:FindFirstChild('Molotov') ~= nil then
-                if plrExplode.Character ~= nil then
-                    burn(plrExplode)
-                    task.wait(3)
-                    if plrExplode.Character.Humanoid.Health > 0 then
-                        local notif = Notification.new("warning", "Burn Player", "Failed to kill player")
-                        notif:deleteTimeout(3)
-                    end
-                else
-                    local notif = Notification.new("warning", "Burn Player", "Player character not found")
-                    notif:deleteTimeout(3)
-                end
-            else
-                local notif = Notification.new("warning", "Burn Player", "Molotov not found")
-                notif:deleteTimeout(3)
-            end
-        else
-            local notif = Notification.new("warning", "Burn Player", "Please pick a player to burn")
-            notif:deleteTimeout(3)
-        end
-    end,
-    DoubleClick = false,
-    Tooltip = 'Attempts to start a fire on a player (Requires a molotov)'
-})
-
-local explodeAllButton = blatantBoxLeft:AddButton({
-    Text = 'Explode All',
-    Func = function()
-        local ammoBox = nil
-
-        if workspace.Map.GAME:FindFirstChild('Bases') ~= nil then
-            for i,v in pairs(workspace.Map.GAME:FindFirstChild('Bases'):GetDescendants()) do
-                if v.Name == 'AmmoEquipmentRefil' and v.Parent.Name:find(tostring(game.Players.LocalPlayer.Team.Name)) then
-                    teleport(v)
-                    ammoBox = v
-                end
-            end
-        end
-        
-        for i,player in pairs(game.Players:GetChildren()) do
-            if canTarget(player) then
-                if ammoBox ~= nil then
-                    if game.Players.LocalPlayer.Backpack:FindFirstChild('Impact') ~= nil then
-                        fireproximityprompt(ammoBox.ProximityPrompt)
-                        task.wait()
-                        explode(player)
-                        task.wait()
-                        ammoBox.ProximityPrompt.Enabled = false
-                        task.wait()
-                        ammoBox.ProximityPrompt.Enabled = true
-                        task.wait()
-                        fireproximityprompt(ammoBox.ProximityPrompt)
-                    elseif game.Players.LocalPlayer.Backpack:FindFirstChild('Grenade') ~= nil then
-                        fireproximityprompt(ammoBox.ProximityPrompt)
-                        task.wait()
-                        grenadeExplode(player)
-                        task.wait()
-                        ammoBox.ProximityPrompt.Enabled = false
-                        task.wait()
-                        ammoBox.ProximityPrompt.Enabled = true
-                        task.wait()
-                        fireproximityprompt(ammoBox.ProximityPrompt)
-                    else
-                        local notif = Notification.new("warning", "Explode Player", "Impact or normal grenade not found")
-                        notif:deleteTimeout(3)
-                        break
-                    end
-                else
-                    local notif = Notification.new("warning", "Explode All", "Ammo Box not found")
-                    notif:deleteTimeout(3)
-                    break
-                end
-            end
-            task.wait(0.3)
-        end
-    end,
-    DoubleClick = false,
-    Tooltip = 'Attempts to explode everyone on the opposite team'
-})
-
-blatantBoxRight:AddDropdown('explodePlayerDropDown', {
-    Values = {unpack(plrs)},
-    Default = 0,
-    Multi = false,
-
-    Text = 'Player to Explode/Burn',
-    Tooltip = 'Select a player to blow up or cook alive',
-
-    Callback = function(Value)
-        for i,v in pairs(game.Players:GetChildren()) do
-            if v.DisplayName == Value then
-                plrExplode = v
-            end
-        end
-    end
-})
-
-]]--
-
 local killAllButton = blatantBoxLeft:AddButton({
     Text = 'Kill All',
     Func = function()
-        --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
-
         for i,v in pairs(game.Players:GetChildren()) do
-            if v.Team ~= game.Players.LocalPlayer.Team and v.Character:FindFirstChild('HumanoidRootPart') ~= nil and game.Players.LocalPlayer.Character.PrimaryPart then
+            if canTarget(v) then
                 killPlayer(v)
             end
             task.wait()
@@ -2850,8 +2241,8 @@ local killPlrButton = killAllButton:AddButton({
     Text = 'Kill Player',
     Func = function()
         if playerToKill ~= nil then 
-            if playerToKill.Character and game.Players.LocalPlayer.Character.PrimaryPart then
-                --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
+            if playerToKill.Character and playerVariables.LocalPlayer.Character.PrimaryPart then
+                --getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
                 killPlayer(playerToKill)
             else
                 local notif = Notification.new("warning", "Kill Player", "Player character not found")
@@ -2878,21 +2269,13 @@ blatantBoxLeft:AddToggle('loopKillAll', {
 
 Toggles.loopKillAll:OnChanged(function()
     task.spawn(function()
-        local runFunc = true
-
         while killAllLoop do
-            for i,v in pairs(game.Players:GetChildren()) do
-                if v.Team ~= game.Players.LocalPlayer.Team and v.Character ~= nil and v.Character:FindFirstChild('HumanoidRootPart') and v.Character.Humanoid.Health > 0 and game.Players.LocalPlayer.Character.PrimaryPart then
-                    if runFunc then
-                        --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
-                    end
+            for i,v in game.Players:GetChildren() do
+                if canTarget(v) then
                     killPlayer(v)
                 end
-                task.wait()
-                runFunc = false
             end
             task.wait(2)
-            runFunc = true
         end
     end)
 end)
@@ -2910,9 +2293,8 @@ blatantBoxLeft:AddToggle('loopKillPlr', {
 Toggles.loopKillPlr:OnChanged(function()
     task.spawn(function()
         while killPlrLoop do
-            --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
             for i,v in pairs(game.Players:GetChildren()) do
-                if v.Character ~= nil and v.Character:FindFirstChild('HumanoidRootPart') ~= nil and v == playerToKill and game.Players.LocalPlayer.Character.PrimaryPart then
+                if canTarget(v) and v == playerToKill then
                     killPlayer(v)
                 end
             end
@@ -2935,8 +2317,8 @@ Toggles.killAuraToggle:OnChanged(function()
     task.spawn(function()
         while killAuraBool do 
             for i,v in pairs(game.Players:GetChildren()) do
-                if v.Team ~= game.Players.LocalPlayer.Team and v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild('HumanoidRootPart') and game.Players.LocalPlayer.Character.PrimaryPart then 
-                    if game.Players.LocalPlayer:DistanceFromCharacter(v.Character.HumanoidRootPart.Position) <= killAuraRange then
+                if canTarget(v) then
+                    if playerVariables.LocalPlayer:DistanceFromCharacter(v.Character.HumanoidRootPart.Position) <= killAuraRange then
                         killPlayer(v)
                     end
                 end
@@ -2961,12 +2343,12 @@ blatantBoxLeft:AddToggle('assistKillToggle', {
 Toggles.assistKillToggle:OnChanged(function()
     task.spawn(function()
         while assistFarmLoop do
-            --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
+            --getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
             if unloaded or not assistFarmLoop then
                 break
             end
             for i,v in pairs(game.Players:GetChildren()) do
-                if v ~= game.Players.LocalPlayer and v.Character ~= nil and v.Character.PrimaryPart and v.Team ~= game.Players.LocalPlayer.Team and game.Players.LocalPlayer.Character.PrimaryPart then
+                if canTarget(v) then
                     if v.Character.Humanoid.Health >= 90 then
                         damagePlayer(v)
                     end
@@ -2978,102 +2360,7 @@ Toggles.assistKillToggle:OnChanged(function()
     end)
 end)
 
---[[
-
-local destroyVehicles = blatantBoxLeft:AddButton({
-    Text = 'Destroy Vehicles',
-    Func = function()
-        for i,v in next, workspace.ActiveVehicles:GetDescendants() do
-            if v.Name == 'Body' and vehicletype == 'Car' then
-                destroyVehicleGround(v)
-                task.wait()
-            elseif v.Name == 'Body' and vehicletype == 'Heli' then
-                destroyVehicleAir(v)
-                task.wait()
-            elseif v.Name == 'Body' and vehicletype == 'Both' then
-                destroyVehicleGround(v)
-                task.wait()
-                destroyVehicleAir(v)
-            end
-        end
-    end,
-    DoubleClick = false,
-    Tooltip = 'Destroy all or only select vehicles in the game'
-})
-
-blatantBoxLeft:AddToggle('loopDestroyVehicles', {
-    Text = 'Loop Destroy Vehicles',
-    Default = false,
-    Tooltip = 'Constantly destroys the vehicles on the map',
-
-    Callback = function(Value)
-        getgenv().destroyVehiclesLoop = Value
-    end
-})
-
-Toggles.loopDestroyVehicles:OnChanged(function()
-    task.spawn(function()
-        while destroyVehiclesLoop do 
-            for i,v in next, workspace.ActiveVehicles:GetDescendants() do
-                if v.Name == 'Body' and vehicletype == 'Car' then
-                    destroyVehicleGround(v)
-                    task.wait()
-                elseif v.Name == 'Body' and vehicletype == 'Heli' then
-                    destroyVehicleAir(v)
-                    task.wait()
-                elseif v.Name == 'Body' and vehicletype == 'Both' then
-                    destroyVehicleGround(v)
-                    task.wait()
-                    destroyVehicleAir(v)
-                end
-            end
-            task.wait(0.8)
-        end
-    end)
-end)
-
-]]--
-
 blatantBoxTPSettings:AddDivider()
-
---[[
-
-blatantBoxLeft:AddToggle('vehicleAuraToggle', {
-    Text = 'Vehicle Aura',
-    Default = false,
-    Tooltip = 'Destroys vehicles within a certain range of you',
-
-    Callback = function(Value)
-        getgenv().vehicleAuraBool = Value
-    end
-})
-
-Toggles.vehicleAuraToggle:OnChanged(function()
-    task.spawn(function()
-        while vehicleAuraBool do 
-            for i,v in pairs(workspace.ActiveVehicles:GetDescendants()) do
-                if v.Name == 'Body' then
-                    if game.Players.LocalPlayer:DistanceFromCharacter(v.Base.Position) <= vehicleAuraRange then
-                        if v.Name == 'Body' and vehicletype == 'Car' then
-                            destroyVehicleGround(v)
-                            task.wait()
-                        elseif v.Name == 'Body' and vehicletype == 'Heli' then
-                            destroyVehicleAir(v)
-                            task.wait()
-                        elseif v.Name == 'Body' and vehicletype == 'Both' then
-                            destroyVehicleGround(v)
-                            task.wait()
-                            destroyVehicleAir(v)
-                        end
-                    end
-                end
-            end
-            task.wait(0.5)
-        end
-    end)
-end)
-
-]]--
 
 local objectiveTeleportButton = blatantBoxTeleport:AddButton({
     Text = 'TP to Objective',
@@ -3158,11 +2445,11 @@ if Owner then
 
             while weakenBool do
                 for i,v in pairs(game.Players:GetChildren()) do
-                    if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= game.Players.LocalPlayer.Team and v.Character.Humanoid.Health >= neededHealth then
+                    if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= playerVariables.LocalTeam and v.Character.Humanoid.Health >= neededHealth then
                         local loopAmount = math.floor(v.Character.Humanoid.Health / getLeastDamage())
 
                         if runFunc then
-                            --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
+                            --getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
                         end
 
                         for i = 1, loopAmount do
@@ -3199,9 +2486,9 @@ if Owner then
             if weakenPlayer ~= nil then
                 while weakenPlayerBool do
                     for i,v in pairs(game.Players:GetChildren()) do
-                        if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= game.Players.LocalPlayer.Team and v.Character.Humanoid.Health >= neededHealth and v == weakenPlayer then
+                        if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= playerVariables.LocalTeam and v.Character.Humanoid.Health >= neededHealth and v == weakenPlayer then
                             local loopAmount = math.floor(v.Character.Humanoid.Health / getLeastDamage())
-                            --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
+                            --getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
 
                             for i = 1, loopAmount do
                                 damagePlayer(v)
@@ -3218,10 +2505,10 @@ if Owner then
         Text = 'Weaken Enemies',
         Func = function()
             local neededHealth = (getLeastDamage() + 1)
-            --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
+            --getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
 
             for i,v in pairs(game.Players:GetChildren()) do
-                if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= game.Players.LocalPlayer.Team and v.Character.Humanoid.Health >= neededHealth then
+                if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= playerVariables.LocalTeam and v.Character.Humanoid.Health >= neededHealth then
                     local loopAmount = math.floor(v.Character.Humanoid.Health / getLeastDamage())
 
                     for i = 1, loopAmount do
@@ -3241,9 +2528,9 @@ if Owner then
 
             if weakenPlayer then
                 for i,v in pairs(game.Players:GetChildren()) do
-                    if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= game.Players.LocalPlayer.Team and v.Character.Humanoid.Health >= neededHealth and v == weakenPlayer then
+                    if v.Character and v.Character:FindFirstChild('HumanoidRootPart') and v.Team ~= playerVariables.LocalTeam and v.Character.Humanoid.Health >= neededHealth and v == weakenPlayer then
                         local loopAmount = math.floor(v.Character.Humanoid.Health / getLeastDamage())
-                        --getsenv(game.Players.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
+                        --getsenv(playerVariables.LocalPlayer.Character.ACS_Client.ACS_Framework).Shoot()
 
                         for i = 1, loopAmount do
                             damagePlayer(v)
@@ -3307,46 +2594,6 @@ blatantBoxRight:AddDropdown('killWeaponDropDown', {
     end
 })
 
---[[
-
-blatantBoxRight:AddInput('distanceTextBox', {
-    Default = 2500,
-    Numeric = true,
-    Finished = true,
-
-    Text = 'Kill Distance',
-    Tooltip = 'The number that appears in the kill feed showing how far you killed them from',
-
-    Placeholder = 'penis',
-
-    Callback = function(value)
-        if tonumber(value) >= maxDistance then
-            local notif = Notification.new("info", "INFO", "Value must be lower than "..tostring(maxDistance))
-            notif:deleteTimeout(2)
-            getgenv().distance = maxDistance
-        else
-            getgenv().distance = tonumber(value)
-        end
-    end
-})
-
-blatantBoxRight:AddDropdown('destroyVehicleDropDown', {
-    Values = {'Both','Car','Heli'},
-    Default = 1,
-    Multi = false,
-
-    Text = 'Destoy Vehicle Type',
-    Tooltip = 'Select which type of vehicle to destroy, or destroy both',
-
-    Callback = function(Value)
-        vehicletype = Value
-    end
-})
-
-blatantBoxRight:AddDivider()
-
-]]--
-
 blatantBoxRight:AddSlider('killAuraSlider', {
     Text = 'Kill Aura Range',
     Default = 15,
@@ -3360,24 +2607,6 @@ blatantBoxRight:AddSlider('killAuraSlider', {
         killAuraRange = Value
     end
 })
-
---[[
-
-blatantBoxRight:AddSlider('vehicleAuraSlider', {
-    Text = 'Vehicle Aura Range',
-    Default = 15,
-    Min = 15,
-    Max = 500,
-    Rounding = 0,
-    Compact = false,
-    Tooltip = 'How far the vehicle aura works from',
-
-    Callback = function(Value)
-        vehicleAuraRange = Value
-    end
-})
-
-]]--
 
 local blatantLabel = Tabs.Blatant:AddLeftGroupbox('Blatant Tab Info');
 blatantLabel:AddLabel('Tab for blatant settings and what not\nidk what to write, this tab isnt what it used to be', true)
